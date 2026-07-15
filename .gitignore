@@ -1,0 +1,20 @@
+# virtual environment - never commit this, it's machine-specific and huge
+venv/
+
+# environment variables / secrets - API keys, db passwords etc. must never be in git history
+.env
+*.env.local
+
+# python cache files - auto-generated, no value in version control
+__pycache__/
+*.pyc
+
+# database credentials if we ever store a local config
+config.local.py
+
+# ds-generated files
+.DS_Store
+Thumbs.db
+
+# ide settings (optional - some people do commit .vscode/settings.json, but we'll keep it out)
+.vscode/

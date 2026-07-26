@@ -1,0 +1,43 @@
+# runs the weather etl pipeline on a daily schedule via github actions
+# this is wht makes the pipeline actually "scheduled" rather than something that only runs when you manually 
+# type a command - github's servers execute this on their own infrastructure, so it runs even if your laptop
+# is off
+name: Daily Weather Pipeline
+
+on:
+  schedule:
+    # cron syntax: minute hour day month day-of-week, always in utc
+    # "0 17 * * *" = 17:00 UTC daily = 01:00 Asia/Singapore (UTC+8) the next day. We run just after midnight 
+    # MY time so "yesterday" (what our pipeline fetches) is a fully complete day everywhere we care about
+    - cron: '0 17 * * *'
+  # workflow_dispatch lets us manually trigger a run from the github ui
+  # (Actions tab -> Run workflow button) - essential for testing this
+  # without waiting for the actual scheduled time to roll around
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      # pulls our repo's code onto the runner -- without this, the runner is an empty machine with no access 
+      # to src/main.py at all
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      # installs exactly what's in requirements.txt - same reproducibility principle as running this locally, 
+      # just on github's machine instead.
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # this is where DATABASE_URL actually reaches our python code
+      # github injects the secret as an environment variable for this step only - it's never written to disk or
+      # visible in logs
+      - name: Run pipeline
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python -m src.main

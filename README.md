@@ -77,3 +77,28 @@ pip install -r requirements.txt
 4. Apply the views: `psql -d your_db -f sql/views/001_analysis_views.sql`
 5. Seed cities (see `sql/schema/001_create_tables.sql` comments for the INSERT)
 6. Run the pipeline: `python -m src.main`
+
+
+## Future Improvements
+
+- **More cities / configurable city list**: currently hardcoded to 4
+  Malaysian cities in `src/extract/config.py`; could be extended to
+  read from a config file or command-line argument.
+- **Alerting on pipeline failure**: `pipeline_runs` already logs
+  failures, but nothing currently notifies a human when one occurs
+  (e.g. a GitHub Actions step that posts to Slack/email on failure).
+- **Automated tests**: validation logic in `src/transform/clean.py`
+  is manually verified; a `tests/` suite with pytest would formalize
+  this and catch regressions.
+- **Dashboard instead of static charts**: charts are currently static
+  PNGs regenerated on demand; a lightweight Streamlit or web dashboard
+  could make them live/interactive (deliberately deferred for this
+  project -- see README's project goals).
+- **Schema migrations tool**: SQL files are numbered and applied
+  manually; a tool like Alembic or Flyway would automate applying
+  new schema changes across environments.
+- **City config duplication**: city coordinates currently live in
+  both `src/extract/config.py` and the `cities` table; a shared
+  source (e.g. loading extract's config from the database, or vice
+  versa) would remove this duplication at the cost of coupling
+  extract to the database.
